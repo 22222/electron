@@ -929,4 +929,12 @@ describe('chromium feature', function () {
       }, /Cannot convert object to primitive value/)
     })
   })
+
+  describe('window.history.go(offset)', function () {
+    it('throws an exception when the argumnet cannot be converted to a string', function () {
+      assert.throws(function () {
+        window.history.go({toString: null})
+      }, /Cannot convert object to primitive value/)
+    })
+  })
 })
