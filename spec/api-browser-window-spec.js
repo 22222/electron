@@ -1106,6 +1106,90 @@ describe('BrowserWindow module', function () {
       })
       w.loadURL('file://' + path.join(fixtures, 'api', 'close-beforeunload-empty-string.html'))
     })
+
+    it('fires for each close attempt', function (done) {
+      var closeCount = 5
+
+      var timeoutHandle = setTimeout(() => {
+        w.webContents.executeJavaScript('isDone = true')
+        assert.fail(`Did not fire ${closeCount} beforeunload events`)
+        done()
+      }, 2000)
+
+      var beforeUnloadCount = 0
+      w.on('onbeforeunload', function () {
+        beforeUnloadCount++
+        if (beforeUnloadCount >= closeCount) {
+          clearTimeout(timeoutHandle)
+          w.webContents.executeJavaScript('isDone = true')
+          done()
+        } else {
+          w.close()
+        }
+      })
+      w.webContents.once('did-finish-load', function () {
+        w.close()
+      })
+      w.loadURL('file://' + path.join(fixtures, 'api', 'beforeunload-false-always.html'))
+    })
+
+    it('fires for each reload attempt', function (done) {
+      var reloadCount = 5
+
+      var timeoutHandle = setTimeout(() => {
+        w.webContents.executeJavaScript('isDone = true')
+        assert.fail(`Did not fire ${reloadCount} beforeunload events`)
+        done()
+      }, 2000)
+
+      var beforeUnloadCount = 0
+      w.on('onbeforeunload', function () {
+        beforeUnloadCount++
+        if (beforeUnloadCount >= reloadCount) {
+          clearTimeout(timeoutHandle)
+          w.webContents.executeJavaScript('isDone = true')
+          done()
+        } else {
+          w.reload()
+        }
+      })
+      w.webContents.once('did-finish-load', function () {
+        w.webContents.once('did-finish-load', function () {
+          assert.fail('Reload was not prevented')
+        })
+        w.reload()
+      })
+      w.loadURL('file://' + path.join(fixtures, 'api', 'beforeunload-false-always.html'))
+    })
+
+    it('fires for each navigation attempt', function (done) {
+      var navigateCount = 5
+
+      var timeoutHandle = setTimeout(() => {
+        w.webContents.executeJavaScript('isDone = true')
+        assert.fail(`Did not fire ${navigateCount} beforeunload events`)
+        done()
+      }, 2000)
+
+      var beforeUnloadCount = 0
+      w.on('onbeforeunload', function () {
+        beforeUnloadCount++
+        if (beforeUnloadCount >= navigateCount) {
+          clearTimeout(timeoutHandle)
+          w.webContents.executeJavaScript('isDone = true')
+          done()
+        } else {
+          w.loadURL('about:blank')
+        }
+      })
+      w.webContents.once('did-finish-load', function () {
+        w.webContents.once('did-finish-load', function () {
+          assert.fail('Navigation was not prevented')
+        })
+        w.loadURL('about:blank')
+      })
+      w.loadURL('file://' + path.join(fixtures, 'api', 'beforeunload-false-always.html'))
+    })
   })
 
   describe('new-window event', function () {

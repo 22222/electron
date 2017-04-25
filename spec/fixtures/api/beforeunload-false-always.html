@@ -1,0 +1,16 @@
+<html>
+<body>
+<script type="text/javascript" charset="utf-8">
+  var isDone = false;
+  window.onbeforeunload = function() {
+    if (isDone) {
+      return;
+    }
+    setTimeout(function() {
+      require('electron').remote.getCurrentWindow().emit('onbeforeunload');
+    }, 0);
+    return false;
+  }
+</script>
+</body>
+</html>
